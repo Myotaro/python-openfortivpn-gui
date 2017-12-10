@@ -7,6 +7,7 @@ from tkinter.messagebox import *
 
 import requests
 
+#Défition des variables fixes
 applicationName = "VPN Com'Unity"
 #WINDOW_SIZE = "800x800"
 
@@ -14,36 +15,7 @@ root = Tk()
 root.title(applicationName)
 #root.geometry(WINDOW_SIZE)
 
-response = requests.get('https://httpbin.org/ip')
-
-Label(root, text='Votre IP: ' + format(response.json()['origin'])).pack()
-Label(root, text='Heure de lancement ' + time.strftime("%I:%M:%S") + '\n').pack()
-
-Label(root, text='Username').pack()
-username = Entry(root)
-username.pack()
-
-Label(root, text='Password').pack()
-password = Entry(root)
-password.pack()
-
-Label(root, text='Gateway').pack()
-vpngateway = Entry(root)
-vpngateway.pack()
-
-Label(root, text='Port').pack()
-vpngatewayport = Entry(root)
-vpngatewayport.pack()
-
-Label(root, text='Gateway Cert').pack()
-vpngatewaycert = Entry(root)
-vpngatewaycert.pack()
-
-shellOutput = Text(root)
-shellOutput.config(width=99, height=25)
-shellOutput.pack()
-shellOutput.insert(END, 'Ready to connect')
-
+#Défition des fonctions
 def vpnConnect():
     p = subprocess.Popen(['openfortivpn',
                           vpngateway.get() + ":" + vpngatewayport.get(),
@@ -59,13 +31,42 @@ def vpnConnect():
     shellOutput.insert(END, output)
     #showwarning(applicationName, output)
 
-Button(root, text="Connect", command=vpnConnect).pack()
-
-
 def callbackQuitWindow():
     showwarning(applicationName, 'The application will now kill the VPN tunnel')
     root.quit()
 
-Button(root, text='Quit', command=callbackQuitWindow).pack()
+#Template
+response = requests.get('https://httpbin.org/ip')
+Label(root, text='Votre IP: ' + format(response.json()['origin'])).grid(row=0, column=0)
+Label(root, text='Heure de lancement ' + time.strftime("%I:%M:%S") + '\n').grid(row=0, column=1)
+
+Label(root, text='Username').grid(row=1,column=0)
+username = Entry(root)
+username.grid(row=1,column=1)
+
+Label(root, text='Password').grid(row=2,column=0)
+password = Entry(root)
+password.grid(row=2,column=1)
+
+Label(root, text='Gateway').grid(row=3,column=0)
+vpngateway = Entry(root)
+vpngateway.grid(row=3,column=1)
+
+Label(root, text='Port').grid(row=4,column=0)
+vpngatewayport = Entry(root)
+vpngatewayport.grid(row=4,column=1)
+
+Label(root, text='Gateway Cert').grid(row=5,column=0)
+vpngatewaycert = Entry(root)
+vpngatewaycert.grid(row=5,column=1)
+
+Button(root, text="Connect", command=vpnConnect).grid(row=6,column=2)
+
+shellOutput = Text(root)
+shellOutput.config(width=99, height=25)
+shellOutput.grid(row=99,column=0, columnspan=3)
+shellOutput.insert(END, 'Ready to connect')
+
+Button(root, text='Quit', command=callbackQuitWindow).grid(row=100,column=2)
 
 root.mainloop()
