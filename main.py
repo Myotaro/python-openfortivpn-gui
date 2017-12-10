@@ -8,7 +8,7 @@ from tkinter.messagebox import *
 import requests
 
 #Défition des variables fixes
-applicationName = "VPN Com'Unity"
+applicationName = "openfortivpn"
 #WINDOW_SIZE = "800x800"
 
 root = Tk()
