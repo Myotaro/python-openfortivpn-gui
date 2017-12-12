@@ -5,8 +5,9 @@ import time
 from tkinter import *
 from tkinter.messagebox import *
 import threading
-
 import requests
+import os
+import signal
 
 #Défition des variables fixes
 applicationName = "openfortivpn"
@@ -20,39 +21,51 @@ root.minsize(width=700,height=650)
 root.maxsize(width=700,height=650)
 
 #Défition des fonctions
+def bytes_to_int(bytes):
+    result = 0
+
+    for b in bytes:
+        result = result * 256 + int(b)
+
+    return result
+
 def vpnConnect():
-    def callback():
-        pConnect = subprocess.Popen(['openfortivpn',
-                              vpngateway.get() + ":" + vpngatewayport.get(),
-                              '--username='+username.get(),
-                              '--trusted-cert',
-                              vpngatewaycert.get()
-                              ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        pConnect.stdin.write((password.get()).encode())
+    findProcessId = subprocess.Popen(['pgrep', 'openfortivpn'], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                     stdin=subprocess.PIPE)
+    processId = findProcessId.stdout.read()
+    #processIdInt = int(str(processId, 'utf-8'))
+    if processId:
+        showwarning(applicationName, 'Déjà connecté!!')
+    else:
+        def callback():
+            pConnect = subprocess.Popen(['openfortivpn',
+                                  vpngateway.get() + ":" + vpngatewayport.get(),
+                                  '--username='+username.get(),
+                                  '--trusted-cert',
+                                  vpngatewaycert.get()
+                                  ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+            pConnect.stdin.write((password.get()).encode())
 
-        output = pConnect.communicate()
+            output = pConnect.communicate()
 
-        shellOutput.delete('1.0', END)
-        shellOutput.insert(END, output)
-        #showwarning(applicationName, output)
+            shellOutput.delete('1.0', END)
+            shellOutput.insert(END, output)
+            #showwarning(applicationName, output)
 
-    t = threading.Thread(target=callback)
-    t.start()
+        t = threading.Thread(target=callback)
+        t.start()
 
 def vpnDisConnect():
-    def callback():
-        findProcessId = subprocess.Popen(['pgrep', 'openfortivpn'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        processId = findProcessId.stdout.read()
-        p = subprocess.Popen(['kill', processId])
-
-        showwarning(applicationName, processId)
-
-    t = threading.Thread(target=callback)
-    t.start()
+    findProcessId = subprocess.Popen(['pgrep', 'openfortivpn'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    processId = findProcessId.stdout.read()
+    if processId:
+        processIdInt = int(str(processId,'utf-8'))
+        if processIdInt > 0:
+            #showwarning(applicationName, processIdInt)
+            os.kill(processIdInt, signal.SIGKILL)  # signal.SIGTERM or signal.SIGKILL
 
 def callbackQuitWindow():
-    #showwarning(applicationName, 'The application will now kill the VPN tunnel')
-    #vpnDisConnect()
+    vpnDisConnect()
     root.quit()
 
 #Template
